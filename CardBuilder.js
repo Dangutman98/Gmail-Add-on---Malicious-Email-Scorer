@@ -172,15 +172,6 @@ function buildScoreCard(message, scoreResult) {
   // --- Navigation Section ---
   var navSection = CardService.newCardSection();
 
-  // VT status indicator
-  var vtKey = getVTApiKey();
-  navSection.addWidget(
-    CardService.newDecoratedText()
-      .setTopLabel('VirusTotal')
-      .setText(vtKey ? '✅ Active — enrichment enabled' : '⚠️ No API key — local analysis only')
-  );
-
-  // Navigation buttons row
   navSection.addWidget(
     CardService.newTextButton()
       .setText('📋 Blacklist & Whitelist')
@@ -214,25 +205,79 @@ function buildHomepageCard() {
       CardService.newCardHeader()
         .setTitle('Malicious Email Scorer')
         .setSubtitle('Email security analysis tool')
-    )
-    .addSection(
-      CardService.newCardSection()
-        .addWidget(
-          CardService.newTextParagraph()
-            .setText('Open an email to analyze its maliciousness score.\n\nThis tool checks:')
-        )
-        .addWidget(
-          CardService.newTextParagraph()
-            .setText(
-              '🔐 <b>Authentication</b> — SPF, DKIM, DMARC\n' +
-              '👤 <b>Sender</b> — Reply-To, spoofing, impersonation\n' +
-              '📝 <b>Content</b> — Phishing patterns, suspicious URLs\n' +
-              '📎 <b>Attachments</b> — Dangerous files, malware indicators\n' +
-              '🌐 <b>Enrichment</b> — VirusTotal reputation data\n' +
-              '🚫 <b>Blacklist</b> — Your personal block list'
-            )
-        )
     );
+
+  // --- Welcome Section ---
+  var welcomeSection = CardService.newCardSection();
+  welcomeSection.addWidget(
+    CardService.newTextParagraph()
+      .setText('Open an email to analyze its maliciousness score.\n\n<b>6 Detection Layers:</b>')
+  );
+  welcomeSection.addWidget(
+    CardService.newTextParagraph()
+      .setText(
+        '🔐 <b>Authentication</b> — SPF, DKIM, DMARC\n' +
+        '👤 <b>Sender</b> — Reply-To, spoofing, impersonation\n' +
+        '📝 <b>Content</b> — Phishing patterns, suspicious URLs\n' +
+        '📎 <b>Attachments</b> — Sandbox analysis, malware indicators\n' +
+        '🌐 <b>Enrichment</b> — VirusTotal reputation data\n' +
+        '🚫 <b>Blacklist</b> — Personal block/trust lists + adaptive scoring'
+      )
+  );
+  card.addSection(welcomeSection);
+
+  // --- Stats Section (if history exists) ---
+  var scans = getScanHistory();
+  if (scans.length > 0) {
+    var statsSection = CardService.newCardSection().setHeader('Your Stats');
+    var avgScore = 0;
+    var safeCount = 0;
+    var riskyCount = 0;
+
+    for (var i = 0; i < scans.length; i++) {
+      avgScore += scans[i].score;
+      if (scans[i].score <= 15) safeCount++;
+      if (scans[i].score >= 41) riskyCount++;
+    }
+    avgScore = Math.round(avgScore / scans.length);
+
+    statsSection.addWidget(
+      CardService.newDecoratedText()
+        .setText('<b>' + scans.length + '</b> emails scanned')
+        .setBottomLabel('Avg score: ' + avgScore + '/100 • ✅ ' + safeCount + ' safe • 🔴 ' + riskyCount + ' risky')
+    );
+
+    card.addSection(statsSection);
+  }
+
+  // --- Quick Navigation ---
+  var navSection = CardService.newCardSection().setHeader('Quick Access');
+
+  navSection.addWidget(
+    CardService.newTextButton()
+      .setText('📋 Blacklist & Whitelist')
+      .setOnClickAction(CardService.newAction().setFunctionName('onOpenBlacklist'))
+  );
+  navSection.addWidget(
+    CardService.newTextButton()
+      .setText('📊 Scan History')
+      .setOnClickAction(CardService.newAction().setFunctionName('onOpenHistory'))
+  );
+  navSection.addWidget(
+    CardService.newTextButton()
+      .setText('⚙️ Settings & Console')
+      .setOnClickAction(CardService.newAction().setFunctionName('onOpenSettings'))
+  );
+
+  card.addSection(navSection);
+
+  // --- Tip ---
+  var tipSection = CardService.newCardSection();
+  tipSection.addWidget(
+    CardService.newTextParagraph()
+      .setText('Open <b>Settings & Console</b> to view live status, toggle features, and adjust sensitivity.')
+  );
+  card.addSection(tipSection);
 
   return card.build();
 }

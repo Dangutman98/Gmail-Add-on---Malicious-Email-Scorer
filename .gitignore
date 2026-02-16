@@ -1,0 +1,22 @@
+# Secrets
+.env
+*.env
+secrets.json
+credentials.json
+
+# Cursor / IDE
+.cursor/
+.vscode/
+*.swp
+*.swo
+
+# OS files
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Node (if using clasp)
+node_modules/
+
+# Assets (screenshots saved by Cursor)
+assets/

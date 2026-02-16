@@ -14,13 +14,19 @@ function analyzeEmail(message) {
   var headers = extractHeaders(rawContent);
 
   // --- Layer 1: Authentication ---
-  findings = findings.concat(analyzeAuthentication(headers));
+  if (isFeatureEnabled('authentication')) {
+    findings = findings.concat(analyzeAuthentication(headers));
+  }
 
   // --- Layer 2: Sender ---
-  findings = findings.concat(analyzeSender(message, headers));
+  if (isFeatureEnabled('sender')) {
+    findings = findings.concat(analyzeSender(message, headers));
+  }
 
   // --- Layer 3: Content ---
-  findings = findings.concat(analyzeContent(message));
+  if (isFeatureEnabled('content')) {
+    findings = findings.concat(analyzeContent(message));
+  }
 
   return findings;
 }
@@ -259,8 +265,8 @@ function analyzeContent(message) {
   var textToScan = subject + ' ' + plainBody;
 
   // --- Multi-language support ---
-  // Detect non-English text and translate for analysis
-  var translatedText = translateIfNeeded(textToScan);
+  // Detect non-English text and translate for analysis (if enabled)
+  var translatedText = isFeatureEnabled('translation') ? translateIfNeeded(textToScan) : null;
   var textForScan = translatedText || textToScan;
 
   // --- Urgency keywords ---

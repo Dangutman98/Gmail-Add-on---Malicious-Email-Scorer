@@ -264,13 +264,17 @@ Each finding is tagged with:
 All data stored per-user via `PropertiesService.getUserProperties()`.
 No external database needed.
 
-| Key               | Type       | Purpose                              |
-|-------------------|------------|--------------------------------------|
-| `blacklist`       | JSON Array | User's blacklisted emails/domains    |
-| `scan_history`    | JSON Array | Last 50 scan results (FIFO)          |
-| `action_history`  | JSON Array | Last 100 user actions (FIFO)         |
-| `settings`        | JSON Object| Feature toggles, sensitivity         |
-| `vt_api_key`      | String     | VirusTotal API key                   |
+| Key                  | Type       | Purpose                              |
+|----------------------|------------|--------------------------------------|
+| `blacklist_emails`   | JSON Array | Blacklisted email addresses          |
+| `blacklist_domains`  | JSON Array | Blacklisted domains                  |
+| `whitelist_emails`   | JSON Array | Trusted email addresses              |
+| `whitelist_domains`  | JSON Array | Trusted domains                      |
+| `scan_history`       | JSON Array | Last 50 scan results (FIFO)          |
+| `action_history`     | JSON Array | Last 100 user actions (FIFO)         |
+| `sensitivity_level`  | String     | 'low', 'medium', or 'high'           |
+| `feature_toggles`    | JSON Object| 7 feature on/off flags               |
+| `vt_api_key`         | String     | VirusTotal API key                   |
 
 ---
 
@@ -362,17 +366,20 @@ GmailAddOn/
 - Graceful skip when no API key configured
 - Settings button on score card with VT status
 
-### Baby 6: Blacklist + History + Adaptive Scoring — NEXT
-- Blacklist CRUD: add/remove emails and domains
-- Scan history: save results, view past scans
-- Action history: track user actions (blacklist, mark safe)
-- Adaptive scoring: repeat offenders boosted, trusted senders reduced
-- Blacklist card + History card in UI
-- **Result:** Personalized, learning tool with memory
+### Baby 6: Blacklist + History + Adaptive Scoring ✅ DONE
+- Blacklist CRUD: add/remove emails and domains with ✕ remove buttons
+- Whitelist (trusted): reduces score for known-safe senders
+- Scan history: saves last 50 scans, viewable in History card with statistics
+- Action history: logs last 100 user actions (blacklist/whitelist changes)
+- Adaptive scoring: repeat offender domains boosted, first-time sender alerts, safe domain baselines
+- Quick action buttons on score card: Blacklist Sender, Blacklist Domain, Mark as Trusted
+- Navigation buttons: Blacklist & Whitelist, History, Settings
 
-### Baby 7: Polish + README + Demo Prep
-- Management console: sensitivity levels, feature toggles
-- Clean README: architecture, APIs, features, limitations
-- Code cleanup, error handling, edge cases
-- Demo preparation with test emails
-- **Result:** Interview-ready deliverable
+### Baby 7: Management Console + README + Polish ✅ DONE
+- Management console in Settings: sensitivity levels (Low/Medium/High), feature toggles (7 toggleable layers)
+- Sensitivity multiplier applied to scoring (0.6x / 1.0x / 1.4x)
+- Feature toggles: disable/enable authentication, sender, content, attachments, enrichment, translation, adaptive
+- Data management: clear history, reset settings
+- Polished homepage: scan statistics, quick navigation, status indicators
+- Comprehensive README: architecture diagram, setup guide, scoring details, design philosophy
+- Multi-language support: auto-translation of non-English emails via LanguageApp

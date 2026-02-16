@@ -41,7 +41,7 @@ function analyzeAttachments(message) {
       // Compute SHA256 hash (will be used for VT lookup in Baby 5)
       var hash = computeSHA256(bytes);
       if (hash) {
-        console.log('Attachment "' + fileName + '" SHA256: ' + hash);
+        // SHA256 hash available for VT lookup
       }
     } catch (e) {
       console.error('Error analyzing attachment bytes for "' + fileName + '": ' + e.toString());

@@ -22,46 +22,60 @@ and produces a score with explainable verdict.
   - VirusTotal API: domain, URL, file hash lookups
   - Settings card: API key save/remove/status
   - Clean domain confirmation: shows "Domain is clean" when VT finds no threats
-  - Scoring: info severity handled, narrative says "VT scan came back clean" for safe results
-  - Multi-language support: auto-translates non-English emails (Hebrew, Arabic, Russian, etc.) to English before content analysis using LanguageApp.translate()
+  - Multi-language: auto-translates non-English emails via LanguageApp.translate()
+- **Baby 6:** Blacklist + Whitelist + History + Adaptive scoring ✅
+  - Blacklist CRUD: add/remove emails and domains with ✕ remove buttons
+  - Whitelist (trusted): reduces score by -10 for trusted emails, -5 for trusted domains
+  - Scan history: saves last 50 scans with score, verdict, sender info
+  - Action history: logs all blacklist/whitelist actions (last 100)
+  - Adaptive scoring: repeat offender domains (+5 per past flag), first-time sender info, known safe domain baseline
+  - History card: recent scans, recent actions, statistics (total, avg score, safe vs risky)
+  - Score card: quick action buttons (Blacklist Sender, Blacklist Domain, Mark as Trusted)
+  - Navigation: Blacklist & Whitelist, History, Settings buttons
 
-### REMAINING
-- **Baby 6:** User blacklist CRUD + Scan/action history + Adaptive scoring
-- **Baby 7:** Management console polish + README + Demo prep
+- **Baby 7:** Management console + README + Polish ✅
+  - Settings card → full management console: sensitivity levels (Low/Med/High), 7 feature toggles
+  - Sensitivity multiplier: Low 0.6x, Medium 1.0x, High 1.4x applied to scoring
+  - Feature toggles: authentication, sender, content, attachments, enrichment, translation, adaptive
+  - Data management: clear history, reset settings buttons
+  - Homepage: scan stats, quick navigation, status indicators
+  - Comprehensive README with architecture diagram, setup, scoring, design philosophy
+
+### ALL SPRINTS COMPLETE
 
 ## Files in the Project
 
 | File | Purpose | Status |
 |------|---------|--------|
 | `appsscript.json` | Gmail Add-on manifest (6 OAuth scopes, triggers) | Done |
-| `Code.js` | Entry points, orchestration pipeline (layers 1-5 wired) | Done |
+| `Code.js` | Entry points, orchestration pipeline (layers 1-6 wired + history save) | Done |
 | `Analyzer.js` | Layers 1-3: auth, sender, content + multi-language translation | Done |
 | `Attachments.js` | Layer 4: attachment sandbox (Stage A metadata + Stage B content) | Done |
 | `Enrichment.js` | Layer 5: VirusTotal API (domain, URL, file hash) + clean confirmations | Done |
+| `Blacklist.js` | Layer 6: blacklist/whitelist CRUD + check + management card | Done |
+| `History.js` | Layer 6b: scan history + action log + adaptive scoring + history card | Done |
 | `Settings.js` | Settings card: VT API key save/remove, navigation callbacks | Done |
-| `Scoring.js` | Weighted scoring engine + threat narrative + info severity support | Done |
-| `CardBuilder.js` | Score card, findings display, VT status, settings button, homepage, error card | Done |
+| `Scoring.js` | Weighted scoring engine + threat narrative + adaptive narrative | Done |
+| `CardBuilder.js` | Score card, quick actions, navigation, findings, homepage, error card | Done |
 | `Utils.js` | Helpers: createFinding, extractDomain, getVerdict, getScoreColor, score bar | Done |
 | `ARCHITECTURE.md` | Full architecture doc with layers, scoring, sprint plan | Done |
 | `PROJECT_STATE.md` | This file — current state for context recovery | Done |
 | `.clasp.json` | clasp CLI config (user needs to add their scriptId) | Template |
 | `README.md` | Basic setup instructions | Needs expansion in Baby 7 |
-| `Blacklist.js` | NOT YET CREATED — Baby 6 | Pending |
-| `History.js` | NOT YET CREATED — Baby 6 | Pending |
 
 ## OAuth Scopes in appsscript.json
 1. `gmail.addons.execute` — add-on execution
 2. `gmail.addons.current.message.metadata` — email metadata
 3. `gmail.addons.current.message.readonly` — email body/attachments
 4. `gmail.readonly` — raw email headers (getRawContent)
-5. `script.external_request` — VirusTotal API calls (UrlFetchApp) + LanguageApp translation
-6. `script.storage` — PropertiesService for settings/blacklist/history
+5. `script.external_request` — VirusTotal API calls + LanguageApp translation
+6. `script.storage` — PropertiesService for settings/blacklist/whitelist/history
 
 ## Deployment
 - Project is deployed as a **test deployment** in Google Apps Script
 - User copies files manually into the Apps Script editor (not using clasp)
 - After changes: update .gs files in editor → save → refresh Gmail
-- New scopes require re-authorization: go to myaccount.google.com/permissions → remove app → reinstall test deployment
+- New scopes require re-authorization: myaccount.google.com/permissions → remove app → reinstall
 - VirusTotal API key: Settings card → paste key → Save. Free tier: 4 req/min, 500/day
 
 ## Key Technical Patterns
@@ -72,8 +86,11 @@ onGmailMessageOpen(e)
   → analyzeEmail(message)        // Analyzer.js: layers 1-3 (auth, sender, content + translation)
   → analyzeAttachments(message)  // Attachments.js: layer 4
   → analyzeEnrichment(message)   // Enrichment.js: layer 5 (skips if no VT key)
+  → checkBlacklist(message)      // Blacklist.js: layer 6 (blacklist/whitelist check)
+  → getAdaptiveFindings(message) // History.js: layer 6b (repeat offender, first-time sender)
   → calculateScore(findings)     // Scoring.js: weighted aggregation
-  → buildScoreCard(message, scoreResult) // CardBuilder.js: UI
+  → saveScanHistory(message, scoreResult) // History.js: persist scan
+  → buildScoreCard(message, scoreResult)  // CardBuilder.js: UI
 ```
 
 ### Finding Object Format
@@ -86,44 +103,33 @@ Severities: info, low, medium, high, critical
 ### Category Weights (Scoring.js)
 - authentication: 1.0, sender: 1.0, content: 0.7, attachment: 1.0, enrichment: 0.9, blacklist: 1.0
 
-### VirusTotal Integration (Enrichment.js)
-- API key stored in: `PropertiesService.getUserProperties().getProperty('vt_api_key')`
-- Domain: `GET /api/v3/domains/{domain}` → clean/suspicious/malicious finding
-- URL: `GET /api/v3/urls/{base64url_no_padding}` → suspicious/malicious finding
-- File hash: `GET /api/v3/files/{sha256}` → suspicious/malicious finding
-- All use `x-apikey` header, `muteHttpExceptions: true`
-- Clean domains return an info-severity "Domain is clean" finding
-- Graceful skip if no key configured
+### Storage Keys (PropertiesService.getUserProperties)
+- `vt_api_key` — VirusTotal API key string
+- `blacklist_emails` — JSON array of blacklisted emails
+- `blacklist_domains` — JSON array of blacklisted domains
+- `whitelist_emails` — JSON array of trusted emails
+- `whitelist_domains` — JSON array of trusted domains
+- `scan_history` — JSON array of scan entries (max 50)
+- `action_history` — JSON array of action entries (max 100)
 
-### Multi-Language Support (Analyzer.js)
-- `translateIfNeeded(text)` detects non-Latin chars (Hebrew, Arabic, Cyrillic, CJK, Korean)
-- Uses `LanguageApp.translate(sample, '', 'en')` — auto-detects source language
-- Translates first 3000 chars, then runs all English pattern checks on translated text
-- Falls back to original text if translation fails
+### Score Card UI Sections
+1. Score display (score bar, verdict, signals count)
+2. Threat Narrative
+3. Signal Details (grouped by category with PASS/WARNING/FAIL status)
+4. Email Info (subject, from, date)
+5. Quick Actions (Blacklist Sender, Blacklist Domain, Mark as Trusted)
+6. Navigation (VT status, Blacklist & Whitelist, History, Settings)
 
-### Settings Card Navigation (Settings.js)
-- `onOpenSettings()` → pushCard(buildSettingsCard())
-- `onSaveVTApiKey(e)` → saves to UserProperties
-- `onClearVTApiKey()` → deletes from UserProperties
-- `onBackToHome()` → popCard()
-
-### Attachment Sandbox (Attachments.js)
-- Stage A (metadata): dangerous extensions, double ext, macro-enabled, archive, size
-- Stage B (content): magic bytes validation, suspicious strings, macro markers, encrypted ZIP
-- `computeSHA256(bytes)` — used for VT file hash lookup
-
-### Scoring Details (Scoring.js)
-- `getCategoryStatus()` returns PASS for info-only findings (green in UI)
-- Threat narrative distinguishes "VT scan came back clean" vs "flagged"
-- Score capped at 0-100, findings with score 0 don't affect total
-
-## Reference Code Found During Research
-- VirusTotal API pattern from "Himaya" project (UrlFetchApp.fetch with x-apikey header)
-- kosborn/Gmail-Phish-Addon — getRawContent(), getHeader() patterns
-- dennisavk/Email-Security-Analyzer — phishing score + VT integration reference
-- googleworkspace/gmail-add-on-codelab — CardService navigation patterns
+### Navigation Cards
+- `onOpenBlacklist()` → Blacklist & Whitelist management card
+- `onOpenHistory()` → Scan history + actions + statistics card
+- `onOpenSettings()` → VT API key management card
+- `onBackToHome()` → pop card (go back)
 
 ## Next Step
-Start Baby 6: Create `Blacklist.js` (add/remove emails/domains, check against blacklist)
-and `History.js` (scan history + action log + adaptive scoring). Wire into Code.js pipeline.
-Add Blacklist card and History card to CardBuilder.js with navigation buttons on score card.
+Baby 7: Management console polish + README + Demo prep
+- Management console: sensitivity levels, feature toggles
+- Clean README: architecture, APIs, features, limitations, setup instructions
+- Code cleanup, error handling, edge cases
+- Demo preparation with test emails
+- Interview-ready deliverable

@@ -35,12 +35,16 @@ function calculateScore(findings) {
   }
 
   var totalScore = 0;
+  var sensitivityMult = getSensitivityMultiplier();
 
   for (var i = 0; i < findings.length; i++) {
     var f = findings[i];
     var weight = CATEGORY_WEIGHTS[f.category] || 1.0;
     totalScore += f.score * weight;
   }
+
+  // Apply sensitivity multiplier
+  totalScore = totalScore * sensitivityMult;
 
   // Cap score at 0-100
   var finalScore = Math.min(100, Math.max(0, Math.round(totalScore)));

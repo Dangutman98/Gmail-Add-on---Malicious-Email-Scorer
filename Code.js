@@ -20,23 +20,29 @@ function onGmailMessageOpen(e) {
       return [buildErrorCard('Could not access the email message.')];
     }
 
-    // Run all analysis layers and collect findings
+    // Run all analysis layers (respecting feature toggles)
     var findings = [];
 
-    // Layer 1-3: Authentication + Sender + Content analysis
+    // Layer 1-3: Authentication + Sender + Content analysis (toggles checked inside)
     findings = findings.concat(analyzeEmail(message));
 
     // Layer 4: Attachment sandbox analysis
-    findings = findings.concat(analyzeAttachments(message));
+    if (isFeatureEnabled('attachments')) {
+      findings = findings.concat(analyzeAttachments(message));
+    }
 
     // Layer 5: VirusTotal enrichment (if API key configured)
-    findings = findings.concat(analyzeEnrichment(message));
+    if (isFeatureEnabled('enrichment')) {
+      findings = findings.concat(analyzeEnrichment(message));
+    }
 
     // Layer 6: Blacklist / Whitelist check
     findings = findings.concat(checkBlacklist(message));
 
-    // Layer 6b: Adaptive scoring from history (repeat offenders, first-time senders)
-    findings = findings.concat(getAdaptiveFindings(message));
+    // Layer 6b: Adaptive scoring from history
+    if (isFeatureEnabled('adaptive')) {
+      findings = findings.concat(getAdaptiveFindings(message));
+    }
 
     // Calculate score and verdict
     var scoreResult = calculateScore(findings);
