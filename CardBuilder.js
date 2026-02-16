@@ -128,28 +128,78 @@ function buildScoreCard(message, scoreResult) {
 
   card.addSection(infoSection);
 
-  // --- Actions Section ---
-  var actionsSection = CardService.newCardSection();
+  // --- Quick Actions Section ---
+  var quickSection = CardService.newCardSection().setHeader('Quick Actions');
+
+  var senderEmail = extractEmail(message.getFrom() || '');
+  var senderDomain = extractDomain(message.getFrom() || '');
+
+  // Blacklist sender button
+  var blEmailAction = CardService.newAction()
+    .setFunctionName('onBlacklistEmail')
+    .setParameters({ email: senderEmail });
+
+  quickSection.addWidget(
+    CardService.newTextButton()
+      .setText('🚫 Blacklist Sender')
+      .setOnClickAction(blEmailAction)
+  );
+
+  // Blacklist domain button
+  var blDomainAction = CardService.newAction()
+    .setFunctionName('onBlacklistDomain')
+    .setParameters({ domain: senderDomain });
+
+  quickSection.addWidget(
+    CardService.newTextButton()
+      .setText('🚫 Blacklist Domain')
+      .setOnClickAction(blDomainAction)
+  );
+
+  // Mark as trusted button
+  var trustAction = CardService.newAction()
+    .setFunctionName('onWhitelistEmail')
+    .setParameters({ email: senderEmail });
+
+  quickSection.addWidget(
+    CardService.newTextButton()
+      .setText('✅ Mark as Trusted')
+      .setOnClickAction(trustAction)
+  );
+
+  card.addSection(quickSection);
+
+  // --- Navigation Section ---
+  var navSection = CardService.newCardSection();
 
   // VT status indicator
   var vtKey = getVTApiKey();
-  actionsSection.addWidget(
+  navSection.addWidget(
     CardService.newDecoratedText()
       .setTopLabel('VirusTotal')
       .setText(vtKey ? '✅ Active — enrichment enabled' : '⚠️ No API key — local analysis only')
   );
 
-  // Settings button
-  var settingsAction = CardService.newAction()
-    .setFunctionName('onOpenSettings');
-
-  actionsSection.addWidget(
+  // Navigation buttons row
+  navSection.addWidget(
     CardService.newTextButton()
-      .setText('⚙️ Settings')
-      .setOnClickAction(settingsAction)
+      .setText('📋 Blacklist & Whitelist')
+      .setOnClickAction(CardService.newAction().setFunctionName('onOpenBlacklist'))
   );
 
-  card.addSection(actionsSection);
+  navSection.addWidget(
+    CardService.newTextButton()
+      .setText('📊 History')
+      .setOnClickAction(CardService.newAction().setFunctionName('onOpenHistory'))
+  );
+
+  navSection.addWidget(
+    CardService.newTextButton()
+      .setText('⚙️ Settings')
+      .setOnClickAction(CardService.newAction().setFunctionName('onOpenSettings'))
+  );
+
+  card.addSection(navSection);
 
   return card.build();
 }

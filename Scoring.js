@@ -108,7 +108,15 @@ function buildThreatNarrative(findings, score) {
   }
 
   if (groups['blacklist']) {
-    parts.push('Sender matches your personal blacklist');
+    var hasBlacklist = groups['blacklist'].some(function(f) { return f.signal.indexOf('Blacklisted') > -1; });
+    var hasWhitelist = groups['blacklist'].some(function(f) { return f.signal.indexOf('Trusted') > -1; });
+    var hasRepeat = groups['blacklist'].some(function(f) { return f.signal.indexOf('Repeat') > -1; });
+    var hasFirstTime = groups['blacklist'].some(function(f) { return f.signal.indexOf('First-time') > -1; });
+
+    if (hasBlacklist) parts.push('Sender matches your personal blacklist');
+    if (hasWhitelist) parts.push('Sender is on your trusted list (score reduced)');
+    if (hasRepeat) parts.push('Domain is a repeat offender in your scan history');
+    if (hasFirstTime) parts.push('First-time sender — no historical baseline');
   }
 
   var narrative = parts.join('. ') + '.';

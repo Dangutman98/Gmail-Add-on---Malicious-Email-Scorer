@@ -20,28 +20,31 @@ function onGmailMessageOpen(e) {
       return [buildErrorCard('Could not access the email message.')];
     }
 
-    // Step 1-2: Run analysis layers and collect findings
+    // Run all analysis layers and collect findings
     var findings = [];
 
-    // Layer 1 & 2: Authentication + Sender analysis
-    var emailFindings = analyzeEmail(message);
-    findings = findings.concat(emailFindings);
+    // Layer 1-3: Authentication + Sender + Content analysis
+    findings = findings.concat(analyzeEmail(message));
 
     // Layer 4: Attachment sandbox analysis
-    var attachmentFindings = analyzeAttachments(message);
-    findings = findings.concat(attachmentFindings);
+    findings = findings.concat(analyzeAttachments(message));
 
     // Layer 5: VirusTotal enrichment (if API key configured)
-    var enrichmentFindings = analyzeEnrichment(message);
-    findings = findings.concat(enrichmentFindings);
+    findings = findings.concat(analyzeEnrichment(message));
 
-    // (Future layers will be added here in later sprints)
-    // Layer 6: Blacklist + History — Baby 6
+    // Layer 6: Blacklist / Whitelist check
+    findings = findings.concat(checkBlacklist(message));
 
-    // Step 3: Calculate score and verdict
+    // Layer 6b: Adaptive scoring from history (repeat offenders, first-time senders)
+    findings = findings.concat(getAdaptiveFindings(message));
+
+    // Calculate score and verdict
     var scoreResult = calculateScore(findings);
 
-    // Step 4: Build and return the UI card
+    // Save scan to history
+    saveScanHistory(message, scoreResult);
+
+    // Build and return the UI card
     var card = buildScoreCard(message, scoreResult);
     return [card];
 
