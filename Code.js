@@ -27,9 +27,11 @@ function onGmailMessageOpen(e) {
     var emailFindings = analyzeEmail(message);
     findings = findings.concat(emailFindings);
 
+    // Layer 4: Attachment sandbox analysis
+    var attachmentFindings = analyzeAttachments(message);
+    findings = findings.concat(attachmentFindings);
+
     // (Future layers will be added here in later sprints)
-    // Layer 3: Content analysis — Baby 3
-    // Layer 4: Attachment sandbox — Baby 4
     // Layer 5: VirusTotal enrichment — Baby 5
     // Layer 6: Blacklist + History — Baby 6
 
