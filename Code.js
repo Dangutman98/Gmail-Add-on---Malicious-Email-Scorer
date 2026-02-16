@@ -31,8 +31,11 @@ function onGmailMessageOpen(e) {
     var attachmentFindings = analyzeAttachments(message);
     findings = findings.concat(attachmentFindings);
 
+    // Layer 5: VirusTotal enrichment (if API key configured)
+    var enrichmentFindings = analyzeEnrichment(message);
+    findings = findings.concat(enrichmentFindings);
+
     // (Future layers will be added here in later sprints)
-    // Layer 5: VirusTotal enrichment — Baby 5
     // Layer 6: Blacklist + History — Baby 6
 
     // Step 3: Calculate score and verdict

@@ -17,32 +17,40 @@ and produces a score with explainable verdict.
 - **Baby 1:** Minimal add-on showing subject + sender in sidebar ✅
 - **Baby 2:** Authentication parsing (SPF/DKIM/DMARC) + Scoring engine + Verdict card ✅
 - **Baby 3:** Content analysis (urgency keywords, phishing patterns, sensitive data requests, suspicious URLs) ✅
+- **Baby 4:** Attachment sandbox (extensions, double ext, magic bytes, SHA256, macro scan, suspicious strings, encrypted ZIP) ✅
+- **Baby 5:** VirusTotal enrichment (domain, URL, file hash lookups) + Settings card for API key ✅
 
 ### REMAINING
-- **Baby 4:** Attachment sandbox (extensions, magic bytes, SHA256 hash, macro scan)
-- **Baby 5:** VirusTotal enrichment (URL, domain, file hash lookups) + Settings card for API key
 - **Baby 6:** User blacklist CRUD + Scan/action history + Adaptive scoring
-- **Baby 7:** Management console + README + Polish + Demo prep
+- **Baby 7:** Management console polish + README + Demo prep
 
 ## Files in the Project
 
 | File | Purpose | Status |
 |------|---------|--------|
-| `appsscript.json` | Gmail Add-on manifest, scopes, triggers | Done |
-| `Code.js` | Entry points, orchestration pipeline | Done |
+| `appsscript.json` | Gmail Add-on manifest (6 OAuth scopes, triggers) | Done |
+| `Code.js` | Entry points, orchestration pipeline (layers 1-5 wired) | Done |
 | `Analyzer.js` | Layers 1-3: auth (SPF/DKIM/DMARC), sender, content analysis | Done |
+| `Attachments.js` | Layer 4: attachment sandbox (Stage A metadata + Stage B content) | Done |
+| `Enrichment.js` | Layer 5: VirusTotal API (domain, URL, file hash lookups) | Done |
+| `Settings.js` | Settings card: VT API key save/remove, navigation callbacks | Done |
 | `Scoring.js` | Weighted scoring engine + threat narrative builder | Done |
-| `CardBuilder.js` | Score card, findings display, homepage, error card | Done |
-| `Utils.js` | Helpers: createFinding, extractDomain, getVerdict, score bar | Done |
+| `CardBuilder.js` | Score card, findings display, VT status, settings button, homepage, error card | Done |
+| `Utils.js` | Helpers: createFinding, extractDomain, getVerdict, getScoreColor, score bar | Done |
 | `ARCHITECTURE.md` | Full architecture doc with layers, scoring, sprint plan | Done |
 | `PROJECT_STATE.md` | This file — current state for context recovery | Done |
 | `.clasp.json` | clasp CLI config (user needs to add their scriptId) | Template |
 | `README.md` | Basic setup instructions | Needs expansion in Baby 7 |
-| `Attachments.js` | NOT YET CREATED — Baby 4 | Pending |
-| `Enrichment.js` | NOT YET CREATED — Baby 5 | Pending |
 | `Blacklist.js` | NOT YET CREATED — Baby 6 | Pending |
 | `History.js` | NOT YET CREATED — Baby 6 | Pending |
-| `Settings.js` | NOT YET CREATED — Baby 5/7 | Pending |
+
+## OAuth Scopes in appsscript.json
+1. `gmail.addons.execute` — add-on execution
+2. `gmail.addons.current.message.metadata` — email metadata
+3. `gmail.addons.current.message.readonly` — email body/attachments
+4. `gmail.readonly` — raw email headers (getRawContent)
+5. `script.external_request` — VirusTotal API calls (UrlFetchApp)
+6. `script.storage` — PropertiesService for settings/blacklist/history
 
 ## Deployment
 - Project is deployed as a **test deployment** in Google Apps Script
@@ -51,14 +59,44 @@ and produces a score with explainable verdict.
 - New scopes require re-authorization (Advanced → Go to unsafe → Allow)
 
 ## Key Technical Patterns
-- `message.getRawContent()` — gets full raw email with headers
-- `extractHeaders()` — splits header block at first blank line
-- Regex parsing of `Authentication-Results` and `Received-SPF` headers
-- `message.getPlainBody()` / `message.getBody()` — for content analysis
-- `createFinding(category, signal, detail, score, severity)` — standard finding format
-- `calculateScore(findings)` — weighted aggregation with category weights
-- `buildScoreCard(message, scoreResult)` — CardService UI builder
-- Content weight is 0.7 (not 1.0) to reduce false positives
+
+### Analysis Pipeline (Code.js)
+```
+onGmailMessageOpen(e)
+  → analyzeEmail(message)        // Analyzer.js: layers 1-3
+  → analyzeAttachments(message)  // Attachments.js: layer 4
+  → analyzeEnrichment(message)   // Enrichment.js: layer 5 (skips if no VT key)
+  → calculateScore(findings)     // Scoring.js: weighted aggregation
+  → buildScoreCard(message, scoreResult) // CardBuilder.js: UI
+```
+
+### Finding Object Format
+```javascript
+{ category, signal, detail, score, severity }
+```
+Categories: authentication, sender, content, attachment, enrichment, blacklist
+
+### Category Weights (Scoring.js)
+- authentication: 1.0, sender: 1.0, content: 0.7, attachment: 1.0, enrichment: 0.9, blacklist: 1.0
+
+### VirusTotal Integration (Enrichment.js)
+- API key stored in: `PropertiesService.getUserProperties().getProperty('vt_api_key')`
+- Domain: `GET /api/v3/domains/{domain}`
+- URL: `GET /api/v3/urls/{base64url_no_padding}`
+- File hash: `GET /api/v3/files/{sha256}`
+- All use `x-apikey` header, `muteHttpExceptions: true`
+- Graceful skip if no key configured
+
+### Settings Card Navigation (Settings.js)
+- `onOpenSettings()` → pushCard(buildSettingsCard())
+- `onSaveVTApiKey(e)` → saves to UserProperties
+- `onClearVTApiKey()` → deletes from UserProperties
+- `onBackToHome()` → popCard()
+
+### Attachment Sandbox (Attachments.js)
+- Stage A (metadata): dangerous extensions, double ext, macro-enabled, archive, size
+- Stage B (content): magic bytes validation, suspicious strings, macro markers, encrypted ZIP
+- `computeSHA256(bytes)` — ready for VT file hash lookup
 
 ## Reference Code Found During Research
 - VirusTotal API pattern from "Himaya" project (UrlFetchApp.fetch with x-apikey header)
@@ -67,6 +105,6 @@ and produces a score with explainable verdict.
 - googleworkspace/gmail-add-on-codelab — CardService navigation patterns
 
 ## Next Step
-Start Baby 4: Create `Attachments.js` with metadata checks (dangerous extensions,
-double extensions, size) and content inspection (magic bytes, SHA256, macro detection).
-Wire it into `Code.js` pipeline.
+Start Baby 6: Create `Blacklist.js` (add/remove emails/domains, check against blacklist)
+and `History.js` (scan history + action log + adaptive scoring). Wire into Code.js pipeline.
+Add Blacklist card and History card to CardBuilder.js with navigation buttons on score card.

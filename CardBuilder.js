@@ -128,6 +128,29 @@ function buildScoreCard(message, scoreResult) {
 
   card.addSection(infoSection);
 
+  // --- Actions Section ---
+  var actionsSection = CardService.newCardSection();
+
+  // VT status indicator
+  var vtKey = getVTApiKey();
+  actionsSection.addWidget(
+    CardService.newDecoratedText()
+      .setTopLabel('VirusTotal')
+      .setText(vtKey ? '✅ Active — enrichment enabled' : '⚠️ No API key — local analysis only')
+  );
+
+  // Settings button
+  var settingsAction = CardService.newAction()
+    .setFunctionName('onOpenSettings');
+
+  actionsSection.addWidget(
+    CardService.newTextButton()
+      .setText('⚙️ Settings')
+      .setOnClickAction(settingsAction)
+  );
+
+  card.addSection(actionsSection);
+
   return card.build();
 }
 

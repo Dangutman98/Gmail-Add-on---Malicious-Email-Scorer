@@ -332,36 +332,37 @@ GmailAddOn/
 
 ## Sprint Plan
 
-### Baby 1: Proof of Life (DONE)
+### Baby 1: Proof of Life ✅ DONE
 - Gmail Add-on shows email subject + sender in sidebar
-- Deployed and working
+- Deployed and working in Gmail
 
-### Baby 2: Authentication + Scoring + Verdict
-- Parse SPF, DKIM, DMARC from email headers
-- Scoring engine: aggregate findings → weighted score → verdict tier
-- Score card with color-coded verdict + findings list
-- **Result:** Real security analysis with explainable verdict
+### Baby 2: Authentication + Scoring + Verdict ✅ DONE
+- SPF/DKIM/DMARC parsing from raw email headers
+- Weighted scoring engine with category weights
+- Score card with color-coded verdict, score bar, threat narrative
+- Tested: Google emails correctly score 0 (SAFE)
 
-### Baby 3: Content + Sender Analysis
-- Urgency keywords, phishing patterns, sensitive data requests
-- Suspicious URL detection (href mismatch, IP URLs, shortened URLs)
-- Reply-to mismatch, display name spoofing, free email detection
-- Grouped findings with per-signal explanations
-- **Result:** Multi-layer detection covering social engineering
+### Baby 3: Content + Sender Analysis ✅ DONE
+- Urgency keywords (6 patterns), phishing patterns (7 patterns), sensitive data requests (5 patterns)
+- URL analysis: href mismatch, IP-based URLs, shortened URL detection
+- Sender: reply-to mismatch, display name spoofing, free email impersonation
+- Tested: phishing test email scored 49% MEDIUM RISK with 4 signals
 
-### Baby 4: Attachment Sandbox
-- Metadata checks: dangerous extensions, double extensions, size
-- Content inspection: magic bytes, SHA256 hash, macro scan, string scan
-- Attachment findings section in the UI
-- **Result:** Can detect malware file delivery attempts
+### Baby 4: Attachment Sandbox ✅ DONE
+- Stage A metadata: dangerous extensions, double extensions, macro-enabled, archive, unusual size
+- Stage B content: magic bytes validation, suspicious strings scan, macro markers, encrypted ZIP detection
+- SHA256 hash computation (ready for VT lookup)
+- Tested: ZIP file correctly flagged as archive (+10 pts)
 
-### Baby 5: VirusTotal Enrichment + Settings
-- VT API integration: URL, domain, file hash lookups
-- Settings card: API key entry, save/load
-- Graceful fallback when no API key configured
-- **Result:** Real-world threat intelligence layered in
+### Baby 5: VirusTotal Enrichment + Settings ✅ DONE
+- Domain reputation: GET /api/v3/domains/{domain}
+- URL reputation: GET /api/v3/urls/{base64url}
+- File hash lookup: GET /api/v3/files/{sha256}
+- Settings card: save/remove API key, status indicator, link to get free key
+- Graceful skip when no API key configured
+- Settings button on score card with VT status
 
-### Baby 6: Blacklist + History + Adaptive Scoring
+### Baby 6: Blacklist + History + Adaptive Scoring — NEXT
 - Blacklist CRUD: add/remove emails and domains
 - Scan history: save results, view past scans
 - Action history: track user actions (blacklist, mark safe)
