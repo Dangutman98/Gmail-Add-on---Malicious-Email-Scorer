@@ -247,6 +247,7 @@ function analyzeSender(message, headers) {
 
 /**
  * Analyzes email body content for phishing signals.
+ * Supports multi-language: detects non-English emails and translates before analysis.
  * @param {GmailMessage} message - Gmail message object
  * @return {Object[]} Array of findings
  */
@@ -257,14 +258,19 @@ function analyzeContent(message) {
   var htmlBody = message.getBody() || '';
   var textToScan = subject + ' ' + plainBody;
 
+  // --- Multi-language support ---
+  // Detect non-English text and translate for analysis
+  var translatedText = translateIfNeeded(textToScan);
+  var textForScan = translatedText || textToScan;
+
   // --- Urgency keywords ---
-  findings = findings.concat(checkUrgencyKeywords(textToScan));
+  findings = findings.concat(checkUrgencyKeywords(textForScan));
 
   // --- Phishing patterns ---
-  findings = findings.concat(checkPhishingPatterns(textToScan));
+  findings = findings.concat(checkPhishingPatterns(textForScan));
 
   // --- Sensitive data requests ---
-  findings = findings.concat(checkSensitiveDataRequests(textToScan));
+  findings = findings.concat(checkSensitiveDataRequests(textForScan));
 
   // --- Suspicious URLs ---
   findings = findings.concat(checkSuspiciousURLs(htmlBody, plainBody));
@@ -466,6 +472,40 @@ function checkSuspiciousURLs(htmlBody, plainBody) {
   }
 
   return findings;
+}
+
+// ============================================================
+// MULTI-LANGUAGE SUPPORT
+// ============================================================
+
+/**
+ * Detects if text contains non-Latin characters and translates to English.
+ * Uses Google Apps Script's LanguageApp for automatic translation.
+ * Returns null if text is already English or translation fails.
+ * @param {string} text - Email text to check
+ * @return {string|null} Translated text, or null if not needed / failed
+ */
+function translateIfNeeded(text) {
+  if (!text || text.length < 20) return null;
+
+  // Check if text contains significant non-Latin characters (Hebrew, Arabic, Cyrillic, CJK, etc.)
+  var nonLatinChars = text.match(/[\u0590-\u05FF\u0600-\u06FF\u0400-\u04FF\u4E00-\u9FFF\u3040-\u30FF\uAC00-\uD7AF]/g);
+  if (!nonLatinChars || nonLatinChars.length < 10) return null;
+
+  try {
+    // Take a reasonable sample to translate (avoid huge emails)
+    var sample = text.substring(0, 3000);
+    var translated = LanguageApp.translate(sample, '', 'en');
+
+    // Only return if translation actually changed the text
+    if (translated && translated !== sample && translated.length > 20) {
+      return translated.toLowerCase();
+    }
+  } catch (e) {
+    console.error('Translation failed: ' + e.toString());
+  }
+
+  return null;
 }
 
 /**

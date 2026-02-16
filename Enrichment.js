@@ -95,6 +95,15 @@ function checkDomainReputation(domain, apiKey) {
         'medium'
       )];
     }
+
+    // Domain is clean — show confirmation
+    return [createFinding(
+      'enrichment',
+      'Domain is clean',
+      'Sender domain "' + domain + '" checked on VirusTotal: ' + stats.harmless + ' engines say harmless, 0 malicious.',
+      0,
+      'info'
+    )];
   } catch (e) {
     console.error('VT domain check error: ' + e.toString());
   }
@@ -136,11 +145,11 @@ function checkURLReputation(url, apiKey) {
     }
 
     if (stats.suspicious > 0) {
-      var displayUrl = url.length > 60 ? url.substring(0, 57) + '...' : url;
+      var displayUrl2 = url.length > 60 ? url.substring(0, 57) + '...' : url;
       return [createFinding(
         'enrichment',
         'Suspicious URL',
-        'URL "' + displayUrl + '" marked suspicious by ' + stats.suspicious + ' engine(s) on VirusTotal.',
+        'URL "' + displayUrl2 + '" marked suspicious by ' + stats.suspicious + ' engine(s) on VirusTotal.',
         10,
         'medium'
       )];

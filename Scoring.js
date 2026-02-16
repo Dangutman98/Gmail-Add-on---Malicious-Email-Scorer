@@ -99,7 +99,12 @@ function buildThreatNarrative(findings, score) {
   }
 
   if (groups['enrichment']) {
-    parts.push('External threat intelligence flagged this email');
+    var vtMalicious = groups['enrichment'].some(function(f) { return f.score > 0; });
+    if (vtMalicious) {
+      parts.push('External threat intelligence flagged this email');
+    } else {
+      parts.push('VirusTotal scan came back clean');
+    }
   }
 
   if (groups['blacklist']) {
@@ -140,15 +145,17 @@ function groupFindingsByCategory(findings) {
 function getCategoryStatus(categoryFindings) {
   if (!categoryFindings || categoryFindings.length === 0) return 'PASS';
 
-  var maxSeverity = 'low';
+  var maxSeverity = 'info';
   for (var i = 0; i < categoryFindings.length; i++) {
     var sev = categoryFindings[i].severity;
     if (sev === 'critical') return 'FAIL';
     if (sev === 'high') maxSeverity = 'high';
     else if (sev === 'medium' && maxSeverity !== 'high') maxSeverity = 'medium';
+    else if (sev === 'low' && maxSeverity === 'info') maxSeverity = 'low';
   }
 
   if (maxSeverity === 'high') return 'FAIL';
   if (maxSeverity === 'medium') return 'WARNING';
-  return 'WARNING';
+  if (maxSeverity === 'low') return 'WARNING';
+  return 'PASS';
 }
