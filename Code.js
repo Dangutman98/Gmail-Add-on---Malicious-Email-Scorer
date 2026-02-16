@@ -1,68 +1,56 @@
 /**
- * Sprint 1 — Minimal Gmail Add-on
- * Shows the email subject in the sidebar when a message is opened.
+ * Code.js — Main entry point and orchestrator
+ * Receives Gmail trigger events, runs the analysis pipeline,
+ * and returns CardService cards to the Gmail sidebar.
  */
 
 /**
  * Contextual trigger: fires when the user opens an email.
+ * This is the main analysis pipeline.
  * @param {Object} e - Gmail event object
  * @return {CardService.Card[]}
  */
 function onGmailMessageOpen(e) {
-  var messageId = e.gmail.messageId;
-  GmailApp.setCurrentMessageAccessToken(e.gmail.accessToken);
+  try {
+    var messageId = e.gmail.messageId;
+    GmailApp.setCurrentMessageAccessToken(e.gmail.accessToken);
 
-  var message = GmailApp.getMessageById(messageId);
-  var subject = message.getSubject();
-  var from = message.getFrom();
+    var message = GmailApp.getMessageById(messageId);
+    if (!message) {
+      return [buildErrorCard('Could not access the email message.')];
+    }
 
-  console.log("Email subject: " + subject);
-  console.log("From: " + from);
+    // Step 1-2: Run analysis layers and collect findings
+    var findings = [];
 
-  var card = CardService.newCardBuilder()
-    .setHeader(
-      CardService.newCardHeader()
-        .setTitle("Malicious Email Scorer")
-        .setImageUrl("https://www.gstatic.com/images/icons/material/system/1x/security_white_48dp.png")
-    )
-    .addSection(
-      CardService.newCardSection()
-        .addWidget(
-          CardService.newDecoratedText()
-            .setTopLabel("Subject")
-            .setText(subject || "(no subject)")
-        )
-        .addWidget(
-          CardService.newDecoratedText()
-            .setTopLabel("From")
-            .setText(from || "(unknown)")
-        )
-    )
-    .build();
+    // Layer 1 & 2: Authentication + Sender analysis
+    var emailFindings = analyzeEmail(message);
+    findings = findings.concat(emailFindings);
 
-  return [card];
+    // (Future layers will be added here in later sprints)
+    // Layer 3: Content analysis — Baby 3
+    // Layer 4: Attachment sandbox — Baby 4
+    // Layer 5: VirusTotal enrichment — Baby 5
+    // Layer 6: Blacklist + History — Baby 6
+
+    // Step 3: Calculate score and verdict
+    var scoreResult = calculateScore(findings);
+
+    // Step 4: Build and return the UI card
+    var card = buildScoreCard(message, scoreResult);
+    return [card];
+
+  } catch (error) {
+    console.error('Error in onGmailMessageOpen: ' + error.toString());
+    return [buildErrorCard('Analysis failed: ' + error.message)];
+  }
 }
 
 /**
- * Homepage trigger: fires when the add-on icon is clicked.
- * @param {Object} e - event object
+ * Homepage trigger: fires when the add-on icon is clicked without an email open.
+ * @param {Object} e - Event object
  * @return {CardService.Card[]}
  */
 function onHomepage(e) {
-  var card = CardService.newCardBuilder()
-    .setHeader(
-      CardService.newCardHeader()
-        .setTitle("Malicious Email Scorer")
-        .setSubtitle("Open an email to scan it")
-    )
-    .addSection(
-      CardService.newCardSection()
-        .addWidget(
-          CardService.newTextParagraph()
-            .setText("Select an email to analyze its maliciousness score.")
-        )
-    )
-    .build();
-
-  return [card];
+  return [buildHomepageCard()];
 }
