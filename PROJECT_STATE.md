@@ -6,7 +6,6 @@ and produces a score with explainable verdict.
 
 ## Interview Context
 - **Company:** Upwind (cloud security, eBPF-based runtime threat detection)
-- **Interviewer:** Cloud monitoring engineer
 - **Assignment PDF:** Bootcamp home task - Gmail Add-on Malicious Email Scorer
 - **Repository:** https://github.com/Dangutman98/Gmail-Add-on---Malicious-Email-Scorer.git
 - **Design philosophy:** Mirrors Upwind's approach — multi-layer detection, baselines, threat narratives, explainability
