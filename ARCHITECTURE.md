@@ -31,16 +31,16 @@ Inspired by Upwind's Threat Stories:
 
 ## Assignment Capability Coverage
 
-| # | Assignment Capability                     | Where it lives                          | Sprint |
-|---|-------------------------------------------|-----------------------------------------|--------|
-| 1 | Email Content and Metadata Analysis       | `Analyzer.js`                           | 2, 3   |
-| 2 | Risk Scoring and Verdict                  | `Scoring.js`                            | 2      |
-| 3 | Explainability                            | `CardBuilder.js` (Threat Story card)    | 2, 3   |
-| 4 | Attachment Analysis                       | `Attachments.js` (sandbox)              | 4      |
-| 5 | Dynamic Enrichment via External APIs      | `Enrichment.js` (VirusTotal)            | 5      |
-| 6 | User-Managed Blacklist                    | `Blacklist.js`                          | 6      |
-| 7 | History of Actions                        | `History.js` (adaptive scoring)         | 6      |
-| 8 | Management Console for User Configuration | `Settings.js`                           | 5, 7   |
+| # | Assignment Capability                     | Where it lives                              | Sprint |
+|---|-------------------------------------------|---------------------------------------------|--------|
+| 1 | Email Content and Metadata Analysis       | `src/analyzer.js`                           | 2, 3   |
+| 2 | Risk Scoring and Verdict                  | `src/scoring.js`                            | 2      |
+| 3 | Explainability                            | `src/cardbuilder.js` (Threat Story card)    | 2, 3   |
+| 4 | Attachment Analysis                       | `src/attachments.js` (sandbox)              | 4      |
+| 5 | Dynamic Enrichment via External APIs      | `src/enrichment.js` (VirusTotal)            | 5      |
+| 6 | User-Managed Blacklist                    | `src/blacklist.js`                          | 6      |
+| 7 | History of Actions                        | `src/history.js` (adaptive scoring)         | 6      |
+| 8 | Management Console for User Configuration | `src/settings.js`                           | 5, 7   |
 
 ---
 
@@ -53,7 +53,7 @@ Inspired by Upwind's Threat Stories:
                            │ contextual trigger
                            ▼
 ┌─────────────────────────────────────────────────────────────────┐
-│                  Code.js  (Orchestrator)                         │
+│                  code.js  (Orchestrator)                         │
 │                                                                  │
 │  1. Receive event + access token                                 │
 │  2. Extract email data (headers, body, attachments, metadata)    │
@@ -282,20 +282,23 @@ No external database needed.
 
 ```
 GmailAddOn/
-├── appsscript.json      # Gmail Add-on manifest
-├── Code.js              # Entry points + orchestration
-├── Analyzer.js          # Layers 1-3: auth, sender, content analysis
-├── Attachments.js       # Layer 4: attachment sandbox
-├── Enrichment.js        # Layer 5: VirusTotal API
-├── Blacklist.js         # Layer 6a: user blacklist CRUD
-├── History.js           # Layer 6b: scan/action history + adaptive scoring
-├── Scoring.js           # Scoring engine + verdict logic
-├── CardBuilder.js       # All UI cards (score, findings, blacklist, history, settings)
-├── Settings.js          # User configuration management
-├── Utils.js             # Shared helpers (URL extraction, domain parsing, etc.)
-├── .clasp.json          # clasp CLI config
-├── ARCHITECTURE.md      # This file
-└── README.md            # Setup, features, limitations
+├── appsscript.json          # Gmail Add-on manifest
+├── .clasp.json              # clasp CLI config
+├── .gitignore
+├── ARCHITECTURE.md          # This file
+├── PROJECT_STATE.md         # Current project state for context recovery
+├── README.md                # Setup, features, limitations
+└── src/
+    ├── code.js              # Entry points + orchestration
+    ├── analyzer.js          # Layers 1-3: auth, sender, content analysis
+    ├── attachments.js       # Layer 4: attachment sandbox
+    ├── enrichment.js        # Layer 5: VirusTotal API
+    ├── blacklist.js         # Layer 6a: user blacklist CRUD
+    ├── history.js           # Layer 6b: scan/action history + adaptive scoring
+    ├── scoring.js           # Scoring engine + verdict logic
+    ├── cardbuilder.js       # All UI cards (score, findings, blacklist, history, settings)
+    ├── settings.js          # User configuration management
+    └── utils.js             # Shared helpers (URL extraction, domain parsing, etc.)
 ```
 
 ---

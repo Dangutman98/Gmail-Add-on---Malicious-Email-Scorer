@@ -1,4 +1,4 @@
-# Project State — Last Updated: Feb 16, 2026
+# Project State — Last Updated: Feb 15, 2026
 
 ## What This Is
 Gmail Add-on for Upwind bootcamp home task. Analyzes emails for maliciousness
@@ -48,20 +48,21 @@ and produces a score with explainable verdict.
 | File | Purpose | Status |
 |------|---------|--------|
 | `appsscript.json` | Gmail Add-on manifest (6 OAuth scopes, triggers) | Done |
-| `Code.js` | Entry points, orchestration pipeline (layers 1-6 wired + history save) | Done |
-| `Analyzer.js` | Layers 1-3: auth, sender, content + multi-language translation | Done |
-| `Attachments.js` | Layer 4: attachment sandbox (Stage A metadata + Stage B content) | Done |
-| `Enrichment.js` | Layer 5: VirusTotal API (domain, URL, file hash) + clean confirmations | Done |
-| `Blacklist.js` | Layer 6: blacklist/whitelist CRUD + check + management card | Done |
-| `History.js` | Layer 6b: scan history + action log + adaptive scoring + history card | Done |
-| `Settings.js` | Settings card: VT API key save/remove, navigation callbacks | Done |
-| `Scoring.js` | Weighted scoring engine + threat narrative + adaptive narrative | Done |
-| `CardBuilder.js` | Score card, quick actions, navigation, findings, homepage, error card | Done |
-| `Utils.js` | Helpers: createFinding, extractDomain, getVerdict, getScoreColor, score bar | Done |
+| `src/code.js` | Entry points, orchestration pipeline (layers 1-6 wired + history save) | Done |
+| `src/analyzer.js` | Layers 1-3: auth, sender, content + multi-language translation | Done |
+| `src/attachments.js` | Layer 4: attachment sandbox (Stage A metadata + Stage B content) | Done |
+| `src/enrichment.js` | Layer 5: VirusTotal API (domain, URL, file hash) + clean confirmations | Done |
+| `src/blacklist.js` | Layer 6: blacklist/whitelist CRUD + check + management card | Done |
+| `src/history.js` | Layer 6b: scan history + action log + adaptive scoring + history card | Done |
+| `src/settings.js` | Settings card: VT API key, sensitivity, toggles, management console | Done |
+| `src/scoring.js` | Weighted scoring engine + threat narrative + adaptive narrative | Done |
+| `src/cardbuilder.js` | Score card, quick actions, navigation, findings, homepage, error card | Done |
+| `src/utils.js` | Helpers: createFinding, extractDomain, getVerdict, getScoreColor, score bar | Done |
 | `ARCHITECTURE.md` | Full architecture doc with layers, scoring, sprint plan | Done |
 | `PROJECT_STATE.md` | This file — current state for context recovery | Done |
+| `README.md` | Open-source style README with setup guide, features, scoring | Done |
 | `.clasp.json` | clasp CLI config (user needs to add their scriptId) | Template |
-| `README.md` | Basic setup instructions | Needs expansion in Sprint 7 |
+| `.gitignore` | Excludes secrets, IDE files, OS files | Done |
 
 ## OAuth Scopes in appsscript.json
 1. `gmail.addons.execute` — add-on execution
@@ -80,17 +81,17 @@ and produces a score with explainable verdict.
 
 ## Key Technical Patterns
 
-### Analysis Pipeline (Code.js)
+### Analysis Pipeline (src/code.js)
 ```
 onGmailMessageOpen(e)
-  → analyzeEmail(message)        // Analyzer.js: layers 1-3 (auth, sender, content + translation)
-  → analyzeAttachments(message)  // Attachments.js: layer 4
-  → analyzeEnrichment(message)   // Enrichment.js: layer 5 (skips if no VT key)
-  → checkBlacklist(message)      // Blacklist.js: layer 6 (blacklist/whitelist check)
-  → getAdaptiveFindings(message) // History.js: layer 6b (repeat offender, first-time sender)
-  → calculateScore(findings)     // Scoring.js: weighted aggregation
-  → saveScanHistory(message, scoreResult) // History.js: persist scan
-  → buildScoreCard(message, scoreResult)  // CardBuilder.js: UI
+  → analyzeEmail(message)        // analyzer.js: layers 1-3 (auth, sender, content + translation)
+  → analyzeAttachments(message)  // attachments.js: layer 4
+  → analyzeEnrichment(message)   // enrichment.js: layer 5 (skips if no VT key)
+  → checkBlacklist(message)      // blacklist.js: layer 6 (blacklist/whitelist check)
+  → getAdaptiveFindings(message) // history.js: layer 6b (repeat offender, first-time sender)
+  → calculateScore(findings)     // scoring.js: weighted aggregation
+  → saveScanHistory(message, scoreResult) // history.js: persist scan
+  → buildScoreCard(message, scoreResult)  // cardbuilder.js: UI
 ```
 
 ### Finding Object Format
@@ -100,7 +101,7 @@ onGmailMessageOpen(e)
 Categories: authentication, sender, content, attachment, enrichment, blacklist
 Severities: info, low, medium, high, critical
 
-### Category Weights (Scoring.js)
+### Category Weights (scoring.js)
 - authentication: 1.0, sender: 1.0, content: 0.7, attachment: 1.0, enrichment: 0.9, blacklist: 1.0
 
 ### Storage Keys (PropertiesService.getUserProperties)
@@ -127,9 +128,8 @@ Severities: info, low, medium, high, critical
 - `onBackToHome()` → pop card (go back)
 
 ## Next Step
-Sprint 7: Management console polish + README + Demo prep
-- Management console: sensitivity levels, feature toggles
-- Clean README: architecture, APIs, features, limitations, setup instructions
-- Code cleanup, error handling, edge cases
-- Demo preparation with test emails
-- Interview-ready deliverable
+All sprints complete. Project ready for submission.
+- All files moved to `src/` directory with lowercase filenames
+- README rewritten in open-source style with full setup guide
+- Architecture and project state docs updated
+- Code cleanup done
