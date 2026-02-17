@@ -38,7 +38,7 @@ function analyzeAttachments(message) {
       findings = findings.concat(checkMacroMarkers(fileName, bytes, contentType));
       findings = findings.concat(checkEncryptedArchive(fileName, bytes));
 
-      // Compute SHA256 hash (will be used for VT lookup in Baby 5)
+      // Compute SHA256 hash (used for VT lookup in Sprint 5)
       var hash = computeSHA256(bytes);
       if (hash) {
         // SHA256 hash available for VT lookup

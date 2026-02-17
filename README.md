@@ -2,6 +2,16 @@
 
 A Gmail Add-on that analyzes emails for malicious intent using **6 detection layers**, producing an explainable risk score with a clear verdict. Built as a bootcamp home assignment for **Upwind Security**.
 
+## Deliverables (per assignment)
+
+| Deliverable | Location |
+|-------------|----------|
+| **Source code** | This repository |
+| **Architecture** | See [Architecture](#architecture) and [File Structure](#file-structure) |
+| **APIs used** | See [OAuth Scopes](#oauth-scopes) and [Tech Stack](#tech-stack) |
+| **Implemented features** | See [Features](#features) |
+| **Limitations** | See [Limitations](#limitations) |
+
 ## Features
 
 ### 6 Detection Layers

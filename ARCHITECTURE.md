@@ -336,29 +336,29 @@ GmailAddOn/
 
 ## Sprint Plan
 
-### Baby 1: Proof of Life ✅ DONE
+### Sprint 1: Proof of Life ✅ DONE
 - Gmail Add-on shows email subject + sender in sidebar
 - Deployed and working in Gmail
 
-### Baby 2: Authentication + Scoring + Verdict ✅ DONE
+### Sprint 2: Authentication + Scoring + Verdict ✅ DONE
 - SPF/DKIM/DMARC parsing from raw email headers
 - Weighted scoring engine with category weights
 - Score card with color-coded verdict, score bar, threat narrative
 - Tested: Google emails correctly score 0 (SAFE)
 
-### Baby 3: Content + Sender Analysis ✅ DONE
+### Sprint 3: Content + Sender Analysis ✅ DONE
 - Urgency keywords (6 patterns), phishing patterns (7 patterns), sensitive data requests (5 patterns)
 - URL analysis: href mismatch, IP-based URLs, shortened URL detection
 - Sender: reply-to mismatch, display name spoofing, free email impersonation
 - Tested: phishing test email scored 49% MEDIUM RISK with 4 signals
 
-### Baby 4: Attachment Sandbox ✅ DONE
+### Sprint 4: Attachment Sandbox ✅ DONE
 - Stage A metadata: dangerous extensions, double extensions, macro-enabled, archive, unusual size
 - Stage B content: magic bytes validation, suspicious strings scan, macro markers, encrypted ZIP detection
 - SHA256 hash computation (ready for VT lookup)
 - Tested: ZIP file correctly flagged as archive (+10 pts)
 
-### Baby 5: VirusTotal Enrichment + Settings ✅ DONE
+### Sprint 5: VirusTotal Enrichment + Settings ✅ DONE
 - Domain reputation: GET /api/v3/domains/{domain}
 - URL reputation: GET /api/v3/urls/{base64url}
 - File hash lookup: GET /api/v3/files/{sha256}
@@ -366,7 +366,7 @@ GmailAddOn/
 - Graceful skip when no API key configured
 - Settings button on score card with VT status
 
-### Baby 6: Blacklist + History + Adaptive Scoring ✅ DONE
+### Sprint 6: Blacklist + History + Adaptive Scoring ✅ DONE
 - Blacklist CRUD: add/remove emails and domains with ✕ remove buttons
 - Whitelist (trusted): reduces score for known-safe senders
 - Scan history: saves last 50 scans, viewable in History card with statistics
@@ -375,7 +375,7 @@ GmailAddOn/
 - Quick action buttons on score card: Blacklist Sender, Blacklist Domain, Mark as Trusted
 - Navigation buttons: Blacklist & Whitelist, History, Settings
 
-### Baby 7: Management Console + README + Polish ✅ DONE
+### Sprint 7: Management Console + README + Polish ✅ DONE
 - Management console in Settings: sensitivity levels (Low/Medium/High), feature toggles (7 toggleable layers)
 - Sensitivity multiplier applied to scoring (0.6x / 1.0x / 1.4x)
 - Feature toggles: disable/enable authentication, sender, content, attachments, enrichment, translation, adaptive

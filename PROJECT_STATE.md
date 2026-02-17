@@ -14,16 +14,16 @@ and produces a score with explainable verdict.
 ## Current Sprint Status
 
 ### COMPLETED
-- **Baby 1:** Minimal add-on showing subject + sender in sidebar ✅
-- **Baby 2:** Authentication parsing (SPF/DKIM/DMARC) + Scoring engine + Verdict card ✅
-- **Baby 3:** Content analysis (urgency keywords, phishing patterns, sensitive data requests, suspicious URLs) ✅
-- **Baby 4:** Attachment sandbox (extensions, double ext, magic bytes, SHA256, macro scan, suspicious strings, encrypted ZIP) ✅
-- **Baby 5:** VirusTotal enrichment + Settings + Multi-language + Clean confirmations ✅
+- **Sprint 1:** Minimal add-on showing subject + sender in sidebar ✅
+- **Sprint 2:** Authentication parsing (SPF/DKIM/DMARC) + Scoring engine + Verdict card ✅
+- **Sprint 3:** Content analysis (urgency keywords, phishing patterns, sensitive data requests, suspicious URLs) ✅
+- **Sprint 4:** Attachment sandbox (extensions, double ext, magic bytes, SHA256, macro scan, suspicious strings, encrypted ZIP) ✅
+- **Sprint 5:** VirusTotal enrichment + Settings + Multi-language + Clean confirmations ✅
   - VirusTotal API: domain, URL, file hash lookups
   - Settings card: API key save/remove/status
   - Clean domain confirmation: shows "Domain is clean" when VT finds no threats
   - Multi-language: auto-translates non-English emails via LanguageApp.translate()
-- **Baby 6:** Blacklist + Whitelist + History + Adaptive scoring ✅
+- **Sprint 6:** Blacklist + Whitelist + History + Adaptive scoring ✅
   - Blacklist CRUD: add/remove emails and domains with ✕ remove buttons
   - Whitelist (trusted): reduces score by -10 for trusted emails, -5 for trusted domains
   - Scan history: saves last 50 scans with score, verdict, sender info
@@ -33,7 +33,7 @@ and produces a score with explainable verdict.
   - Score card: quick action buttons (Blacklist Sender, Blacklist Domain, Mark as Trusted)
   - Navigation: Blacklist & Whitelist, History, Settings buttons
 
-- **Baby 7:** Management console + README + Polish ✅
+- **Sprint 7:** Management console + README + Polish ✅
   - Settings card → full management console: sensitivity levels (Low/Med/High), 7 feature toggles
   - Sensitivity multiplier: Low 0.6x, Medium 1.0x, High 1.4x applied to scoring
   - Feature toggles: authentication, sender, content, attachments, enrichment, translation, adaptive
@@ -61,7 +61,7 @@ and produces a score with explainable verdict.
 | `ARCHITECTURE.md` | Full architecture doc with layers, scoring, sprint plan | Done |
 | `PROJECT_STATE.md` | This file — current state for context recovery | Done |
 | `.clasp.json` | clasp CLI config (user needs to add their scriptId) | Template |
-| `README.md` | Basic setup instructions | Needs expansion in Baby 7 |
+| `README.md` | Basic setup instructions | Needs expansion in Sprint 7 |
 
 ## OAuth Scopes in appsscript.json
 1. `gmail.addons.execute` — add-on execution
@@ -127,7 +127,7 @@ Severities: info, low, medium, high, critical
 - `onBackToHome()` → pop card (go back)
 
 ## Next Step
-Baby 7: Management console polish + README + Demo prep
+Sprint 7: Management console polish + README + Demo prep
 - Management console: sensitivity levels, feature toggles
 - Clean README: architecture, APIs, features, limitations, setup instructions
 - Code cleanup, error handling, edge cases
