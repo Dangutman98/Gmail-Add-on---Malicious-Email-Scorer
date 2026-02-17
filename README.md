@@ -214,7 +214,3 @@ Each detection layer can be enabled/disabled independently via **Settings & Cons
 | "Permission denied" or UrlFetchApp error | Go to [myaccount.google.com/permissions](https://myaccount.google.com/permissions) → remove "Malicious Email Scorer" → reinstall via Deploy → Test deployments. |
 | Score doesn't change after toggling features | Make sure you saved the toggle in Settings, then re-open the email. |
 | Changes to code not showing | Save all `.gs` files in the editor, then refresh Gmail. |
-
-## License
-
-MIT
